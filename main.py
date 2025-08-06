@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 import requests
 
@@ -11,20 +10,8 @@ def index():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    print("Mensagem recebida:", data)
+    print("Mensagem recebida do cliente:", data)
+    return jsonify({"status": "mensagem recebida"})
 
-    mensagem = data.get('message', '')
-    numero = data.get('phone', '')
-
-    if mensagem and numero:
-        resposta = "Olá! Aqui é o Leone Brabus. Como posso te ajudar a encontrar o imóvel ideal?"
-
-        # Envia resposta automática
-        requests.post("https://api-whatsapp.wascript.com.br/send-text", json={
-            "instance_id": "3E53AE16CC18B190D85F2AC1CE4E084C",
-            "access_token": "FE159CBD3E314AC8890DBA72",
-            "phone": numero,
-            "message": resposta
-        })
-
-    return jsonify({"status": "mensagem enviada"})
+if __name__ == "__main__":
+    app.run(debug=True)
