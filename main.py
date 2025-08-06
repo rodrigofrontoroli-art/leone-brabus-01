@@ -1,16 +1,28 @@
+
 from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def index():
     return "Leone Brabus está rodando com sucesso!"
 
-@app.route("/webhook", methods=["POST"])
+@app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.json
-    print("Mensagem recebida do Cliente:", data)
-    return jsonify({"status": "ok"})
+    data = request.get_json()
+    print("Mensagem recebida:", data)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # Verifica se é uma mensagem recebida válida
+    if 'text' in data.get('message', {}):
+        resposta = {
+            "replies": [
+                {
+                    "message": "Olá! Eu sou o Leone, corretor virtual da Brabus. Me diga: está procurando imóvel para morar ou para investir?"
+                }
+            ]
+        }
+        return jsonify(resposta)
+
+    # Se não for uma mensagem válida, retorna vazio
+    return jsonify({})
