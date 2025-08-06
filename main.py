@@ -1,20 +1,31 @@
 
 from flask import Flask, request, jsonify
-import os
-import datetime
+import requests
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
-def home():
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return f"Leone Brabus está rodando! 🟢 ({now})"
+ZAPI_TOKEN = "FE159CBD3E314AC8890DBA72"
+INSTANCE_ID = "3E53AE16CC18B190D85F2AC1CE4E084C"
+
+@app.route("/")
+def index():
+    return "Leone Brabus está rodando com sucesso!"
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
     print("Mensagem recebida:", data)
-    return jsonify({"status": "ok"})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    try:
+        phone = data['message'][0]['phone']
+        url = f"https://api.z-api.io/instances/{INSTANCE_ID}/token/{ZAPI_TOKEN}/send-text"
+        payload = {
+            "phone": phone,
+            "message": "Olá! Aqui é o Leone, corretor virtual da Brabus. Posso te ajudar a encontrar seu imóvel ideal?"
+        }
+        r = requests.post(url, json=payload)
+        print("Resposta enviada:", r.json())
+    except Exception as e:
+        print("Erro ao processar webhook:", e)
+
+    return jsonify({"status": "ok"})
