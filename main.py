@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import requests
 
 app = Flask(__name__)
 
@@ -10,8 +9,8 @@ def index():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    print("Mensagem recebida do cliente:", data)
-    return jsonify({"status": "mensagem recebida"})
+    print("Mensagem recebida do Cliente:", data)
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
