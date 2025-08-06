@@ -1,16 +1,18 @@
+
 from flask import Flask, request, jsonify
-from datetime import datetime
+import os
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
     return "Leone Brabus está rodando com sucesso!"
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    print(f"[{agora}] 📩 Mensagem recebida:")
-    print(data)
-    return jsonify({"status": "ok"}), 200
+    print("Mensagem recebida:", data)
+    return jsonify({"status": "ok"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
