@@ -1,6 +1,6 @@
 
 from flask import Flask, request, jsonify
-import os
+import requests
 
 app = Flask(__name__)
 
@@ -10,27 +10,21 @@ def index():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    try:
-        data = request.json
+    data = request.json
+    print("Mensagem recebida:", data)
 
-        # Extraindo dados principais
-        mensagem = data.get("message", {}).get("text", "").lower()
-        nome = data.get("message", {}).get("from_name", "Cliente")
-        numero = data.get("message", {}).get("from", "Sem número")
+    mensagem = data.get('message', '')
+    numero = data.get('phone', '')
 
-        print(f"Mensagem recebida de {nome} ({numero}): {mensagem}")
+    if mensagem and numero:
+        resposta = "Olá! Aqui é o Leone Brabus. Como posso te ajudar a encontrar o imóvel ideal?"
 
-        # Resposta padrão
-        resposta = f"Olá {nome}, tudo bem? Aqui é o Leone, corretor online da Brabus. Me conta: o que você está buscando hoje?"
-
-        return jsonify({
-            "replies": [resposta]
+        # Envia resposta automática
+        requests.post("https://api-whatsapp.wascript.com.br/send-text", json={
+            "instance_id": "3E53AE16CC18B190D85F2AC1CE4E084C",
+            "access_token": "FE159CBD3E314AC8890DBA72",
+            "phone": numero,
+            "message": resposta
         })
 
-    except Exception as e:
-        print("Erro ao processar mensagem:", e)
-        return jsonify({"status": "erro", "detalhe": str(e)}), 500
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    return jsonify({"status": "mensagem enviada"})
