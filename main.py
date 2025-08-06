@@ -1,46 +1,36 @@
 from flask import Flask, request, jsonify
-import requests
 import os
-from datetime import datetime
+import requests
 
 app = Flask(__name__)
 
-ZAPI_TOKEN = "FE159CBD3E314AC8890DBA72"
-ZAPI_INSTANCE_ID = "3E53AE16CC18B190D85F2AC1CE4E084C"
+TOKEN = os.getenv("WAZZUP_TOKEN")
+INSTANCE_ID = os.getenv("WAZZUP_INSTANCE_ID")
 
 @app.route("/")
-def index():
-    return "Leone Brabus está rodando com sucesso!"
+def home():
+    return "Leone Brabus está online!"
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
     print("Mensagem recebida:", data)
-
     try:
-        message = data.get("text")
-        phone = data.get("phone")
-
-        if message and phone:
-            resposta = f"Olá! Recebemos sua mensagem às {datetime.now().strftime('%H:%M:%S')} — já vamos te ajudar."
-            send_message(phone, resposta)
-
+        phone = data["phone"]
+        message = "Olá, aqui é o Leone da Brabus. Como posso te ajudar?"
+        send_message(phone, message)
     except Exception as e:
-        print("Erro ao processar mensagem:", e)
-
+        print("Erro ao responder:", e)
     return jsonify({"status": "ok"})
 
-def send_message(phone, message):
-    url = f"https://api-whatsapp.wascript.com.br/send-message"
-    headers = {
-        "Content-Type": "application/json",
-        "apikey": ZAPI_TOKEN,
-        "instanceid": ZAPI_INSTANCE_ID
-    }
+def send_message(phone, text):
+    url = f"https://api.z-api.io/instances/{INSTANCE_ID}/token/{TOKEN}/send-text"
     payload = {
         "phone": phone,
-        "message": message
+        "message": text
     }
+    response = requests.post(url, json=payload)
+    print("Resposta da API:", response.text)
 
-    response = requests.post(url, json=payload, headers=headers)
-    print("Resposta da API Z-API:", response.text)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
