@@ -1,12 +1,12 @@
-
 from flask import Flask, request, jsonify
 import requests
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 
-ZAPI_INSTANCE_ID = "3E53AE16CC18B190D85F2AC1CE4E084C"
-ZAPI_TOKEN = "FE159CBD3E314AC8890DBA72"
-ZAPI_URL = f"https://api.z-api.io/instances/{ZAPI_INSTANCE_ID}/token/{ZAPI_TOKEN}/send-messages"
+ZAPI_TOKEN = os.getenv("ZAPI_TOKEN")
+ZAPI_INSTANCE = os.getenv("ZAPI_INSTANCE")
 
 @app.route("/")
 def index():
@@ -18,24 +18,32 @@ def webhook():
     print("Mensagem recebida:", data)
 
     try:
-        phone = data["phone"]
-        message = data["message"]
-        nome = data.get("senderName", "cliente")
+        message_info = data.get("message", {})
+        text = message_info.get("text", {}).get("text", "").strip()
+        phone = data.get("phone", "")
+        name = data.get("name", "Cliente")
 
-        texto_resposta = f"Olá, {nome}! Aqui é o Leone da Brabus. Acabei de receber sua mensagem. Em instantes o Rodrigo vai te responder pessoalmente 😉"
-
-        payload = {
-            "phone": phone,
-            "message": texto_resposta
-        }
-
-        response = requests.post(ZAPI_URL, json=payload)
-        print("Resposta enviada:", response.text)
-
+        if text:
+            resposta = f"Oi {name}, tudo bem? Aqui é o Leone da Brabus! Recebi sua mensagem e já estou verificando a melhor opção para você."
+            enviar_mensagem(phone, resposta)
     except Exception as e:
-        print("Erro ao processar mensagem:", str(e))
+        print("Erro ao processar webhook:", str(e))
 
     return jsonify({"status": "ok"})
 
+def enviar_mensagem(telefone, mensagem):
+    url = f"https://api-whatsapp.wascript.com.br/send-message"
+    payload = {
+        "instance_id": ZAPI_INSTANCE,
+        "token": ZAPI_TOKEN,
+        "phone": telefone,
+        "message": mensagem
+    }
+    try:
+        response = requests.post(url, json=payload)
+        print("Resposta da API:", response.text)
+    except Exception as erro:
+        print("Erro ao enviar mensagem:", erro)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
